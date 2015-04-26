@@ -6,7 +6,7 @@ output: html_document
 This is a analysis on the machine learning project. A dataset is used, belt, forearm, arm, and dumbell of 6 participants were asked to perform barbell lifts. The goal of this report is to evaluate is the exercise is performed correctly. Random Forest and CTress are used.
 
 ###Load the Data
-```{r,echo=TRUE, cache=TRUE,warning=TRUE}
+```{r,warning=TRUE}
 setwd("E:/machine learning/project1")
 library(data.table)
 library(caret)
@@ -17,7 +17,7 @@ library(arm)
 library(kernlab)
 ```
 
-```{r, echo=FALSE,cache=TRUE}
+```{r}
 read.pml = function(file) {
     fread(file, na.strings=c("#DIV/0!", ""))}
 test=fread("pml-testing.csv")
@@ -34,14 +34,14 @@ The test dataseet is used for test the result we got, the train dataset is used 
 
 For all the columns in test and train, only one variable is different, the 160th column. We will remove the last column "probelm_id" in test set. So that now there will be only 159 columns in the test set, and 160 columns in the train set.
 
-```{r, echo=TRUE,cache=TRUE}
+```{r}
 test=subset(test,select=-160)
 dim(test)
 ```
 
 There are 160 variables in the dataset, first we can cut the first 5 columns, as they are just some participants' information.
 
-```{r, echo=FALSE,cache=TRUE}
+```{r}
 #drop=c("V1","user_name","raw-timestamp_part_1","raw_timestamp_part_2","cvtd_timestap"))
 #train[,!(names(train)%in%drop)]
 train=subset(train,select=-c(1:5))
@@ -53,7 +53,7 @@ test=subset(test,select=-c(1:5))   ##drop the unused columns
 
 Since there are many columns that only consist few information, we will eliminate those columns in both training dataset and test dataset. Here columns with more than 90% of the rows are filled in will be remained.
 
-```{r,echo=TRUE,cache=TRUE}
+```{r}
 #Zero Variance Tidying
 zerovars <- nearZeroVar(train)
 train2=subset(train,select=-c(zerovars))
@@ -66,7 +66,7 @@ dim(test2)
 
 The next step is to eliminate the columns that has many NAs. Here columns with more than 50% NAs will be removed.
 
-```{r,echo=TRUE,cache=TRUE}
+```{r}
 #NA Tidying
 na= apply(train2,2, function(x) {sum(is.na(x)/length(x))})
 
@@ -83,7 +83,7 @@ Now both training dataset and testing dataset are nicely processed. The column n
 
 We subset the training data into two parts: 70% as the training dataset, 30% as the test dataset.
 
-```{r,echo=TRUE,cache=TRUE}
+```{r}
 set.seed(8221)
 intrain=createDataPartition(y=train3$classe,p=0.7,list=FALSE)
 mytrain=train3[intrain[,1]]
@@ -93,7 +93,7 @@ dim(mytrain);dim(mytest)
 
 ###Random Forest
 
-```{r,echo=TRUE,cache=TRUE}
+```{r}
 set.seed(8221)
 mytrain$classe=as.factor(mytrain$classe)
 modfit=randomForest(classe ~ .,method="rf",data=mytrain,ntree=30)  ##set ntree to shorten the running time
