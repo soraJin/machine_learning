@@ -1,0 +1,116 @@
+---
+title: "machine learning-project1"
+output: html_document
+---
+
+This is a analysis on the machine learning project. A dataset is usede, belt, forearm, arm, and dumbell of 6 participants were asked to perform barbell lifts. The goal of this report is to evaluate is the exercise is performed correctly. Random Forest and CTress are used.
+
+###Load the Data
+```{r,echo=FALSE, cache=TRUE}
+setwd("E:/machine learning/project1")
+library(data.table)
+library(caret)
+library(randomForest)
+library(e1071)
+library(party)
+library(arm)
+library(kernlab)
+```
+
+```{r, echo=FALSE,cache=TRUE}
+
+read.pml = function(file) {
+    fread(file, na.strings=c("#DIV/0!", ""))}
+test=fread("pml-testing.csv")
+train=read.pml("pml-training.csv")
+```
+```{r,echo=TRUE,cache=TRUE}
+dim(test)
+dim(train)
+```
+
+
+
+###Tidy Dataset
+
+The test dataseet is used for test the result we got, the train dataset is used to perform data analysis. We will try to reduce the variables in train dataset, tidy the dataset and leave out the "useful" variables.
+
+For all the columns in test and train, only one variable is different, the 160th column. We will remove the last column "probelm_id" in test set. So that now there will be only 159 columns in the test set, and 160 columns in the train set.
+
+```{r, echo=TRUE,cache=TRUE}
+test=subset(test,select=-160)
+dim(test)
+```
+
+There are 160 variables in the dataset, first we can cut the first 5 columns, as they are just some participants' information.
+
+```{r, echo=FALSE,cache=TRUE}
+#drop=c("V1","user_name","raw-timestamp_part_1","raw_timestamp_part_2","cvtd_timestap"))
+#train[,!(names(train)%in%drop)]
+train=subset(train,select=-c(1:5))
+test=subset(test,select=-c(1:5))   ##drop the unused columns
+
+```
+
+###Eliminate the columns that are sparse
+
+Since there are many columns that only consist few information, we will eliminate those columns in both training dataset and test dataset. Here columns with more than 90% of the rows are filled in will be remained.
+
+```{r,echo=TRUE,cache=TRUE}
+#Zero Variance Tidying
+zerovars <- nearZeroVar(train)
+train2=subset(train,select=-c(zerovars))
+test2=subset(test,select=-c(zerovars))
+dim(train2)
+dim(test2)
+```
+
+###Remove columns have too many NAs.
+
+The next step is to eliminate the columns that has many NAs. Here columns with more than 50% NAs will be removed.
+
+```{r,echo=TRUE,cache=TRUE}
+#NA Tidying
+na= apply(train2,2, function(x) {sum(is.na(x)/length(x))})
+
+drop= which(na> .50)
+train3=subset(train2,select=-drop)
+test3=subset(test2,select=-drop)
+
+dim(train3)
+dim(test3)
+```
+Now both training dataset and testing dataset are nicely processed. The column number is reduced to 54 and 53. _Note that the column number of test dataset is always one less than the colum number of column dataset. As we deleted the different column from train dataset in test dataset._
+
+###Subset Training Data Into Two Parts
+
+We subset the training data into two parts: 70% as the training dataset, 30% as the test dataset.
+
+```{r,echo=TRUE,cache=TRUE}
+set.seed(8221)
+intrain=createDataPartition(y=train3$classe,p=0.7,list=FALSE)
+mytrain=train3[intrain[,1]]
+mytest=train3[-intrain[,1]]
+dim(mytrain);dim(mytest)
+```
+
+###Random Forest
+
+```{r,echo=TRUE,cache=TRUE}
+set.seed(8221)
+mytrain$classe=as.factor(mytrain$classe)
+modfit=randomForest(classe ~ .,method="rf",data=mytrain,ntree=30)  ##set ntree to shorten the running time
+perdictit=predict(modfit,mytest,type="class")
+acc=confusionMatrix(perdictit,mytest$classe)
+acc
+```
+
+We have 99.58% accuracy.Even though we can perform more tests, like Ctree, I don't think the accuracy rate can be any more significanlly higher.
+
+###Conclusion
+
+The out of sample error is approximately 0.42%.
+However, note that even though the error is pretty small, in the real life the out of sample error might be a bit higher due to unexpected circumstances.
+Overall, the random forest provides a satisfying result.
+
+
