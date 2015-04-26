@@ -3,10 +3,10 @@ title: "machine learning-project1"
 output: html_document
 ---
 
-This is a analysis on the machine learning project. A dataset is usede, belt, forearm, arm, and dumbell of 6 participants were asked to perform barbell lifts. The goal of this report is to evaluate is the exercise is performed correctly. Random Forest and CTress are used.
+This is a analysis on the machine learning project. A dataset is used, belt, forearm, arm, and dumbell of 6 participants were asked to perform barbell lifts. The goal of this report is to evaluate is the exercise is performed correctly. Random Forest and CTress are used.
 
 ###Load the Data
-```{r,echo=FALSE, cache=TRUE}
+```{r,echo=TRUE, cache=TRUE,warning=TRUE}
 setwd("E:/machine learning/project1")
 library(data.table)
 library(caret)
@@ -18,7 +18,6 @@ library(kernlab)
 ```
 
 ```{r, echo=FALSE,cache=TRUE}
-
 read.pml = function(file) {
     fread(file, na.strings=c("#DIV/0!", ""))}
 test=fread("pml-testing.csv")
@@ -28,8 +27,6 @@ train=read.pml("pml-training.csv")
 dim(test)
 dim(train)
 ```
-
-
 
 ###Tidy Dataset
 
@@ -105,7 +102,7 @@ acc=confusionMatrix(perdictit,mytest$classe)
 acc
 ```
 
-We have 99.58% accuracy.Even though we can perform more tests, like Ctree, I don't think the accuracy rate can be any more significanlly higher.
+We have 99.58% accuracy.Even though we can perform more tests, I don't think the accuracy rate can be any more significanlly higher.
 
 ###Conclusion
 
